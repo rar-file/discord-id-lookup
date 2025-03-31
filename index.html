@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Discord ID Lookup</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="container">
+    <h1>Sosas Discord ID Lookup</h1>
+    <div class="search-group">
+      <input type="text" id="discordId" placeholder="Enter Discord ID" />
+      <button onclick="lookupDiscordID()">Search</button>
+    </div>
+    <div id="results" class="results"></div>
+    <div class="footer">
+      <p>This Project is Fully Open Source On my Github.</p>
+    </div>
+  </div>
+
+  <script>
+    async function lookupDiscordID() {
+      const idInput = document.getElementById("discordId").value.trim();
+      const resultsDiv = document.getElementById("results");
+      
+      resultsDiv.innerHTML = "";
+      resultsDiv.classList.remove("show");
+
+      if (!idInput) {
+        resultsDiv.innerHTML = "<p class='result-item'>Please enter a Discord ID.</p>";
+        resultsDiv.classList.add("show");
+        return;
+      }
+      
+      if (!/^\d+$/.test(idInput)) {
+        resultsDiv.innerHTML = "<p class='result-item'>Please enter a valid numeric Discord ID.</p>";
+        resultsDiv.classList.add("show");
+        return;
+      }
+      
+      try {
+        const response = await fetch(`https://discordlookup.mesalytic.moe/v1/user/${idInput}`);
+        if (!response.ok) {
+          throw new Error(`Error: ${response.status}`);
+        }
+        const userData = await response.json();
+        console.log("API response:", userData);
+        
+        if (userData && userData.username) {
+          let avatarHtml = "";
+          if (userData.avatar && userData.avatar.link) {
+            avatarHtml = `<img src="${userData.avatar.link}" alt="Profile Picture" class="profile-img" />`;
+          }
+          let bannerHtml = "";
+          if (userData.banner && userData.banner.link) {
+            bannerHtml = `<img src="${userData.banner.link}" alt="Banner Image" class="banner-img" />`;
+          }
+          const createdDate = new Date(userData.created_at).toLocaleString();
+          const badges = userData.badges && userData.badges.length > 0 ? userData.badges.join(', ') : "None";
+          
+          resultsDiv.innerHTML = `
+            ${bannerHtml}
+            ${avatarHtml}
+            <p class="result-item"><strong>Username:</strong> ${userData.username}</p>
+            <p class="result-item"><strong>Global Name:</strong> ${userData.global_name || "N/A"}</p>
+            <p class="result-item"><strong>ID:</strong> ${userData.id}</p>
+            <p class="result-item"><strong>Account Created:</strong> ${createdDate}</p>
+            <p class="result-item"><strong>Accent Color:</strong> ${userData.accent_color || "None"}</p>
+            <p class="result-item"><strong>Badges:</strong> ${badges}</p>
+          `;
+        } else {
+          resultsDiv.innerHTML = "<p class='result-item'>User not found.</p>";
+        }
+      } catch (error) {
+        resultsDiv.innerHTML = `<p class='result-item'>Error fetching user data: ${error.message}</p>`;
+      }
+      
+      resultsDiv.classList.add("show");
+    }
+  </script>
+</body>
+</html>
