@@ -7,5 +7,5 @@
 - download the project as a zip
 - go to your cloudflare pages
 - upload the zip file
-- and boom the code is now up
+- and boom your now self hosting the project!
   
